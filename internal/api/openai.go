@@ -58,7 +58,16 @@ type OpenAIChatRequest struct {
 	PresencePenalty     *float64        `json:"presence_penalty,omitempty"`
 	FrequencyPenalty    *float64        `json:"frequency_penalty,omitempty"`
 	User                string          `json:"user,omitempty"`
+	Reasoning           *ReasoningEffort `json:"reasoning,omitempty"`
 }
+
+type ReasoningEffort string
+
+const (
+	ReasoningEffortLow    ReasoningEffort = "low"
+	ReasoningEffortMedium ReasoningEffort = "medium"
+	ReasoningEffortHigh   ReasoningEffort = "high"
+)
 
 type OpenAIResponsesRequest struct {
 	Model               string   `json:"model"`
@@ -131,10 +140,26 @@ type OpenAIError struct {
 }
 
 type OpenAIModel struct {
-	ID      string `json:"id"`
-	Object  string `json:"object"`
-	Created int64  `json:"created"`
-	OwnedBy string `json:"owned_by"`
+	ID            string `json:"id"`
+	Object        string `json:"object"`
+	Created       int64  `json:"created"`
+	OwnedBy       string `json:"owned_by"`
+	ContextLength int    `json:"context_length,omitempty"`
+	Pricing       *ModelPricing `json:"pricing,omitempty"`
+	// Descriptive metadata from Command Code's docs.
+	// Populated dynamically — display_name is "Claude Sonnet 4.6" etc,
+	// description is the one-line "best for" summary.
+	DisplayName  string `json:"display_name,omitempty"`
+	Description  string `json:"description,omitempty"`
+	Capabilities string `json:"capabilities,omitempty"`
+}
+
+// ModelPricing describes deal/pricing information for a model.
+// Only populated when an active deal exists.
+type ModelPricing struct {
+	Multiplier  string `json:"multiplier,omitempty"`   // e.g. "4x", "2x", "99% off"
+	Description string `json:"description,omitempty"`  // human-readable description
+	Status      string `json:"status,omitempty"`       // "permanent" or expiration date
 }
 
 type OpenAIModelList struct {

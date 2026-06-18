@@ -14,3 +14,9 @@
 # OS files
 .DS_Store
 Thumbs.db
+
+# Build artifacts & local-only scripts
+bin/command-code-proxy-updated
+bin/command-code-proxy-new.exe
+run-proxy.bat
+run-proxy.vbs
