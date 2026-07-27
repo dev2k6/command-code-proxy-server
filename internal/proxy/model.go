@@ -41,6 +41,10 @@ func MapModel(name string) string {
 		return "xiaomi/mimo-v2.5-pro"
 	case "mimo-v2.5", "mimo", "xiaomi/mimo-v2.5":
 		return "xiaomi/mimo-v2.5"
+	case "laguna-s-2.1-free":
+		return "commandcode/laguna-s-2.1-free"
+	case "ling-3.0-flash-free":
+		return "commandcode/ling-3.0-flash-free"
 	default:
 		return name // pass through as-is
 	}
