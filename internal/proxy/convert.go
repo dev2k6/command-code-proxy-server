@@ -72,7 +72,14 @@ func ConvertMessages(openAIMsgs []api.OpenAIMessage) []api.CCMessage {
 			continue
 		}
 
-		ccMsgs = append(ccMsgs, api.CCMessage{Role: m.Role, Content: parseContent(m.Content, toolNames)})
+		// The upstream API only accepts "user"|"assistant"|"tool". Fall back
+		// unknown roles (e.g. an unextracted "developer", or custom roles from
+		// third-party clients) to "user" so the request is never rejected.
+		role := m.Role
+		if role != "user" && role != "assistant" && role != "tool" {
+			role = "user"
+		}
+		ccMsgs = append(ccMsgs, api.CCMessage{Role: role, Content: parseContent(m.Content, toolNames)})
 	}
 	return ccMsgs
 }
@@ -295,7 +302,12 @@ func ExtractSystem(msgs []api.OpenAIMessage) (string, []api.OpenAIMessage) {
 	var system strings.Builder
 	var rest []api.OpenAIMessage
 	for _, m := range msgs {
-		if m.Role == "system" {
+		// "developer" is the newer name for "system" (OpenAI/DeepSeek clients
+		// such as DeepSeek Harness send system prompts with this role). It must
+		// be extracted like "system", otherwise it is forwarded verbatim and
+		// CommandCode rejects the request (messages[].role only accepts
+		// "user"|"assistant"|"tool").
+		if m.Role == "system" || m.Role == "developer" {
 			if system.Len() > 0 {
 				system.WriteString("\n")
 			}
