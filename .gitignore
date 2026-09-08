@@ -10,6 +10,7 @@
 # Drafts & Claude config
 .drafts/
 .claude/
+.opencode/
 
 # OS files
 .DS_Store

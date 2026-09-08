@@ -2,8 +2,21 @@ package proxy
 
 import "strings"
 
-// Map model name if client sends short name
+// MapModel maps a client model name to a CommandCode model id.
+// It first resolves against the dynamically fetched model catalog (supports
+// exact ids, short names, and punctuation-insensitive matches). If the
+// catalog is not loaded yet or the name is not found, it falls back to the
+// static alias table, and finally passes unknown names through unchanged.
 func MapModel(name string) string {
+	if id := catalog.resolve(name); id != "" {
+		return id
+	}
+	return staticMapModel(name)
+}
+
+// staticMapModel handles well-known short aliases while the catalog is still
+// loading (or as a fallback for names the catalog does not contain).
+func staticMapModel(name string) string {
 	switch strings.ToLower(name) {
 	case "deepseek-v4-pro", "deepseek-v4", "deepseek-pro":
 		return "deepseek/deepseek-v4-pro"

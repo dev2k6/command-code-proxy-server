@@ -155,7 +155,17 @@ curl -N http://127.0.0.1:55990/v1/chat/completions \
 
 ## Supported model aliases
 
-The proxy accepts full model IDs and these short aliases:
+The proxy accepts full model IDs, short names (`kimi-k2.5` → `moonshotai/Kimi-K2.5`), and punctuation-insensitive variants (`gemini38flash` → `google/gemini-3.8-flash`).
+
+On startup and then every 6 hours, the proxy fetches the official model list from:
+
+```text
+https://commandcode.ai/docs/reference/cli/models
+```
+
+This is the same model registry that backs the Command Code CLI (`--list-models` / `/model` picker), so the proxy's `/v1/models` always reflects the latest available models without code changes. The fetched catalog is cached in memory; `MapModel` resolves against it first (exact id, short name, and punctuation-insensitive match), falling back to the static list below until the first fetch completes.
+
+Built-in alias fallbacks (used before the first catalog fetch succeeds):
 
 | Alias | Maps to |
 | --- | --- |
@@ -196,6 +206,7 @@ Unknown model names are passed through unchanged.
     │   ├── commandcode.go
     │   └── openai.go
     ├── proxy
+    │   ├── catalog.go
     │   ├── convert.go
     │   ├── model.go
     │   └── proxy.go

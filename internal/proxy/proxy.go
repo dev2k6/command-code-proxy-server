@@ -68,11 +68,13 @@ type Proxy struct {
 
 // NewProxy creates a new proxy instance
 func NewProxy(apiKey string) *Proxy {
-	return &Proxy{
+	p := &Proxy{
 		APIKey:  apiKey,
 		BaseURL: defaultBaseURL,
 		Client:  &http.Client{Timeout: defaultTimeout},
 	}
+	p.StartModelRefresher()
+	return p
 }
 
 // BuildRequest builds the CommandCode request body
@@ -668,37 +670,13 @@ func responseItemsToMessages(items []any) []api.OpenAIMessage {
 
 // HandleModels handles the /v1/models endpoint
 func (p *Proxy) HandleModels(w http.ResponseWriter, r *http.Request) {
+	data := staticModels()
+	if catalog.isLoaded() {
+		data = catalogModels()
+	}
 	models := api.OpenAIModelList{
 		Object: "list",
-		Data: []api.OpenAIModel{
-			// MoonshotAI
-			{ID: "moonshotai/Kimi-K2.6", Object: "model", Created: 0, OwnedBy: "moonshotai"},
-			{ID: "moonshotai/Kimi-K2.5", Object: "model", Created: 0, OwnedBy: "moonshotai"},
-			// ZhipuAI
-			{ID: "zai-org/GLM-5.1", Object: "model", Created: 0, OwnedBy: "zhipuai"},
-			{ID: "zai-org/GLM-5", Object: "model", Created: 0, OwnedBy: "zhipuai"},
-			// MiniMaxAI
-			{ID: "MiniMaxAI/MiniMax-M2.7", Object: "model", Created: 0, OwnedBy: "minimaxai"},
-			{ID: "MiniMaxAI/MiniMax-M2.5", Object: "model", Created: 0, OwnedBy: "minimaxai"},
-			{ID: "MiniMaxAI/MiniMax-M3", Object: "model", Created: 0, OwnedBy: "minimaxai"},
-			// DeepSeek
-			{ID: "deepseek/deepseek-v4-pro", Object: "model", Created: 0, OwnedBy: "deepseek"},
-			{ID: "deepseek/deepseek-v4-flash", Object: "model", Created: 0, OwnedBy: "deepseek"},
-			// Qwen
-			{ID: "Qwen/Qwen3.6-Max-Preview", Object: "model", Created: 0, OwnedBy: "qwen"},
-			{ID: "Qwen/Qwen3.6-Plus", Object: "model", Created: 0, OwnedBy: "qwen"},
-			// StepFun
-			{ID: "stepfun/Step-3.5-Flash", Object: "model", Created: 0, OwnedBy: "stepfun"},
-			{ID: "stepfun/Step-3.7-Flash", Object: "model", Created: 0, OwnedBy: "stepfun"},
-			// Qwen (3.7 line)
-			{ID: "Qwen/Qwen3.7-Max-Free", Object: "model", Created: 0, OwnedBy: "qwen"},
-			{ID: "Qwen/Qwen3.7-Max", Object: "model", Created: 0, OwnedBy: "qwen"},
-			// Xiaomi MiMo
-			{ID: "xiaomi/mimo-v2.5-pro", Object: "model", Created: 0, OwnedBy: "xiaomi"},
-			{ID: "xiaomi/mimo-v2.5", Object: "model", Created: 0, OwnedBy: "xiaomi"},
-			// Google
-			{ID: "google/gemini-3.1-flash-lite", Object: "model", Created: 0, OwnedBy: "google"},
-		},
+		Data:   data,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(models)
